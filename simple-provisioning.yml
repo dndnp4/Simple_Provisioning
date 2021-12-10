@@ -53,16 +53,30 @@
           gateway_id: "{{ result_igw.gateway_id }}"
     register: result_route_table
 
-- name: security group
-  ec2_group:
-    name: Public
-    description: sg with rule descriptions
-    vpc_id: "{{result_vpc.vpc.id}}"
-    region: "{{aws_region}}"
-    rules:
-      - proto: tcp
-        ports:
-        - 80
-        - 22
-        cidr_ip: 0.0.0.0/0
-        rule_desc: allow all on port 80
+  - name: security group
+    ec2_group:
+      name: Public
+      description: sg with rule descriptions
+      vpc_id: "{{result_vpc.vpc.id}}"
+      region: "{{aws_region}}"
+      rules:
+        - proto: tcp
+          ports:
+          - 80
+          - 22
+          cidr_ip: 0.0.0.0/0
+          rule_desc: allow all on port 80
+
+  - name: Create ec2
+    ec2:
+      key_name: "{{ec2_key_name}}"
+      instance_type: "{{instance_type}}"
+      image: "{{instance_image}}"
+      wait: no
+      group: Public
+      count: 1
+      region: "{{aws_region}}"
+      vpc_subnet_id: "{{result_subnet.subnet.id}}"
+      assign_public_ip: yes
+      instance_tags:
+        Name: Webserver
